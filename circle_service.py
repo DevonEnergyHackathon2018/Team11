@@ -17,8 +17,11 @@ while True:
                 stripped_name = blob.name.split("/")[-1]
                 filen = stripped_name.replace(".","_")
                 foldername = "/tmp/%s" % filen
-                if not os.path.isdir(foldername):
-                    os.mkdir(foldername)
+                try:
+                    if not os.path.isdir(foldername):
+                        os.mkdir(foldername)
+                except:
+                    print("[-] unable to create folder: %s" % foldername)
                 extent = blob.name.split(".")[-1]
                 full_path_to_file2 = "%s/original.%s" % (foldername , extent)
                 block_blob_service.get_blob_to_path(container_name, blob.name, full_path_to_file2)
@@ -28,6 +31,8 @@ while True:
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
                 except:
-                    print("[-] unable to create folder: %s" % foldername)
+                    print("[-] unable to find circles")
+                    raise
+                
             else:
                 print("[*] already processed: %s" % blob.name)
