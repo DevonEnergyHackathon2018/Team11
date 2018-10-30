@@ -2,6 +2,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess
 import json
 from circles import get_circles
 import os
+import requests
 
 
 def upload_circles(folder, bbService):
@@ -11,6 +12,13 @@ def upload_circles(folder, bbService):
         blob_path_to_file = "%s/%s" % (fname, filename)
         full_path_to_file = "%s/%s" % (folder, filename)
         bbService.create_blob_from_path("circles", blob_path_to_file, full_path_to_file)
+
+def send_flow(flowurl, message):
+    """sends a request to get a flow going"""
+    resp = requests.post(url=flowurl, json=message)
+    if resp.status_code == 202:
+        print("[+] successfully sent flow")
+
 
 creds = json.load(open('/etc/hackathon/creds.json'))
 
@@ -39,7 +47,9 @@ while True:
                     status[blob.name]=foldername
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
+                    send_flow(creds['flowurl'],{"message":"DRILLBIT - found teeth for %s and uploaded to blob" % blob.name})
                 except:
-                    print("[-] unable to find circles")                
+                    print("[-] unable to find circles")     
+                    send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles"})           
             else:
                 print("[*] already processed: %s" % blob.name)
