@@ -40,8 +40,6 @@ while True:
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
                 except:
-                    print("[-] unable to find circles")
-                    raise
-                
+                    print("[-] unable to find circles")                
             else:
                 print("[*] already processed: %s" % blob.name)
