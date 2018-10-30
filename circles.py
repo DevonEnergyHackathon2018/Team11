@@ -50,7 +50,7 @@ def get_circles(filename, circle_folder):
         crop = masked_data[y:y+h,x:x+w]
 
         #Finaly write circle to file (Probably need to change path or except arguments here)
-        print("%s/circle-%s.jpg" % (circle_folder,_))
+        #print("%s/circle-%s.jpg" % (circle_folder,_))
         cv2.imwrite("%s/circle-%s.jpg" % (circle_folder,_), crop)
 
 
