@@ -42,14 +42,15 @@ while True:
                 full_path_to_file2 = "%s/original.%s" % (foldername , extent)
                 block_blob_service.get_blob_to_path(container_name, blob.name, full_path_to_file2)
                 try:
-                    get_circles(full_path_to_file2, foldername)
-                    upload_circles(foldername, block_blob_service)
+                    if get_circles(full_path_to_file2, foldername):
+                        upload_circles(foldername, block_blob_service)
+                        send_flow(creds['flowurl'],{"message":"DRILLBIT - found circles in: %s" % blob.name})           
+                    else:
+                        send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles in: %s" % blob.name})           
                     status[blob.name]=foldername
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
-                    send_flow(creds['flowurl'],{"message":"DRILLBIT - found teeth for %s and uploaded to blob" % blob.name})
                 except:
                     print("[-] unable to find circles")     
-                    send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles"})           
             else:
                 print("[*] already processed: %s" % blob.name)

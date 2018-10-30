@@ -24,44 +24,47 @@ def get_circles(filename, circle_folder):
     #circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1.4,150,param1=45,param2=30,minRadius=50,maxRadius=100)
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 450)
    # circles = np.uint16(np.around(circles))
+    if circles and circles[0,:]:
+        for _,i in enumerate(circles[0,:]):
+            mask = np.zeros((height,width), np.uint8)
 
-    for _,i in enumerate(circles[0,:]):
-        mask = np.zeros((height,width), np.uint8)
-
-        # draw the outer circle
-        cv2.circle(image,(i[0],i[1]),i[2],(0,255,0),2)
-        # draw the center of the circle
-        cv2.circle(image,(i[0],i[1]),2,(0,0,255),3)
+            # draw the outer circle
+            cv2.circle(image,(i[0],i[1]),i[2],(0,255,0),2)
+            # draw the center of the circle
+            cv2.circle(image,(i[0],i[1]),2,(0,0,255),3)
+            
+            #Code below this point deals with cropping out found circles and writing the cropped circle
+            cv2.circle(mask,(i[0],i[1]),i[2],(255,255,255),thickness=-1)
         
-        #Code below this point deals with cropping out found circles and writing the cropped circle
-        cv2.circle(mask,(i[0],i[1]),i[2],(255,255,255),thickness=-1)
-    
-        # Copy that image using that mask
-        masked_data = cv2.bitwise_and(image, image, mask=mask)
+            # Copy that image using that mask
+            masked_data = cv2.bitwise_and(image, image, mask=mask)
 
-        # Apply Threshold
-        __,thresh = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
+            # Apply Threshold
+            __,thresh = cv2.threshold(mask,1,255,cv2.THRESH_BINARY)
 
-        # Find Contour
-        contours = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        x,y,w,h = cv2.boundingRect(contours[0])
+            # Find Contour
+            contours = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            x,y,w,h = cv2.boundingRect(contours[0])
 
-        # Crop masked_data
-        crop = masked_data[y:y+h,x:x+w]
+            # Crop masked_data
+            crop = masked_data[y:y+h,x:x+w]
 
-        #Finaly write circle to file (Probably need to change path or except arguments here)
-        #print("%s/circle-%s.jpg" % (circle_folder,_))
-        cv2.imwrite("%s/circle-%s.jpg" % (circle_folder,_), crop)
+            #Finaly write circle to file (Probably need to change path or except arguments here)
+            #print("%s/circle-%s.jpg" % (circle_folder,_))
+            cv2.imwrite("%s/circle-%s.jpg" % (circle_folder,_), crop)
 
 
-    #Used to add text to image. Maybe useful method to note which circles are which
-    #font = cv2.FONT_HERSHEY_SIMPLEX
-    #cv2.putText(image,'OpenCV',(10,500), font, 4,(255,255,255),2,cv2.LINE_AA)
+        #Used to add text to image. Maybe useful method to note which circles are which
+        #font = cv2.FONT_HERSHEY_SIMPLEX
+        #cv2.putText(image,'OpenCV',(10,500), font, 4,(255,255,255),2,cv2.LINE_AA)
 
-    #cv2.imshow('detected circles',image)
-    
-    #Used to show cropped images 
-    #cv2.imshow('Cropped Eye',crop)
+        #cv2.imshow('detected circles',image)
+        
+        #Used to show cropped images 
+        #cv2.imshow('Cropped Eye',crop)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        return True
+    else:
+        return False
