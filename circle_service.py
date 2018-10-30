@@ -3,8 +3,16 @@ import json
 from circles import get_circles
 import os
 
-creds = json.load(open('/etc/hackathon/creds.json'))
 
+def upload_circles(folder, bbService):
+    """uploads files from a folder to blob"""
+    for filename in os.listdir(folder):
+        fname = folder.split("/")[-1]
+        blob_path_to_file = "%s/%s" % (fname, filename)
+        full_path_to_file = "%s/%s" % (folder, filename)
+        bbService.create_blob_from_path("circles", blob_path_to_file, full_path_to_file)
+
+creds = json.load(open('/etc/hackathon/creds.json'))
 
 block_blob_service = BlockBlobService(account_name=creds['blobacct'], account_key=creds['blobkey'])
 container_name='photos'
@@ -27,6 +35,7 @@ while True:
                 block_blob_service.get_blob_to_path(container_name, blob.name, full_path_to_file2)
                 try:
                     get_circles(full_path_to_file2, foldername)
+                    upload_circles(foldername, block_blob_service)
                     status[blob.name]=foldername
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
