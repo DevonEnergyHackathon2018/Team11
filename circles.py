@@ -24,14 +24,14 @@ def get_circles(filename, circle_folder):
     #circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1.4,150,param1=45,param2=30,minRadius=50,maxRadius=100)
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 450)
    # circles = np.uint16(np.around(circles))
-    if circles and circles[0,:]:
+    if not circles is None:
         for _,i in enumerate(circles[0,:]):
             mask = np.zeros((height,width), np.uint8)
 
             # draw the outer circle
-            cv2.circle(image,(i[0],i[1]),i[2],(0,255,0),2)
+            # .circle(image,(i[0],i[1]),i[2],(0,255,0),2)
             # draw the center of the circle
-            cv2.circle(image,(i[0],i[1]),2,(0,0,255),3)
+            # cv2.circle(image,(i[0],i[1]),2,(0,0,255),3)
             
             #Code below this point deals with cropping out found circles and writing the cropped circle
             cv2.circle(mask,(i[0],i[1]),i[2],(255,255,255),thickness=-1)

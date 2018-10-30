@@ -15,10 +15,12 @@ def upload_circles(folder, bbService):
 
 def send_flow(flowurl, message):
     """sends a request to get a flow going"""
-    resp = requests.post(url=flowurl, json=message)
-    if resp.status_code == 202:
-        print("[+] successfully sent flow")
-
+    try:
+        resp = requests.post(url=flowurl, json=message)
+        if resp.status_code == 202:
+            print("[+] successfully sent flow")
+    except:
+        print("[-] issues with flow")
 
 creds = json.load(open('/etc/hackathon/creds.json'))
 
@@ -51,6 +53,7 @@ while True:
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
                 except:
-                    print("[-] unable to find circles")     
+                    print("[-] erroring when trying to find circles: %s" % blob.name)
+                    raise
             else:
                 print("[*] already processed: %s" % blob.name)
