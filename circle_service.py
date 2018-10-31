@@ -1,8 +1,11 @@
 from azure.storage.blob import BlockBlobService, PublicAccess
-import json
-from circles import get_circles
 import os
 import requests
+import json
+from circles import get_circles
+from circle_predictor import predict_circles, interpret_results
+from teams_helper import teams_message
+
 
 
 def upload_circles(folder, bbService):
@@ -46,14 +49,20 @@ while True:
                 try:
                     if get_circles(full_path_to_file2, foldername):
                         upload_circles(foldername, block_blob_service)
-                        send_flow(creds['flowurl'],{"message":"DRILLBIT - found circles in: %s" % blob.name})           
+                        circle_predictions = predict_circles(creds['api_url'], creds['api_key'], foldername)
+                        irm = interpret_results(blob.name, circle_predictions)
+                        json.dump(circle_predictions, open(foldername+"/predictions.json","w"))
+                        teams_message(irm['message'],creds['teamshook'],irm['colour'])
+                        #send_flow(creds['flowurl'],{"message":"DRILLBIT - found circles in: %s" % blob.name})           
                     else:
-                        send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles in: %s" % blob.name})           
+                        #send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles in: %s" % blob.name})
+                        teams_message("NOT DRILLBIT. probable data quality issues with %s" % blob.name,creds['teamshook'],"800080")         
                     status[blob.name]=foldername
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
                 except:
                     print("[-] erroring when trying to find circles: %s" % blob.name)
-                    raise
+                    teams_message("data quality issues with %s" % blob.name,creds['teamshook'],"800080")
+
             else:
                 print("[*] already processed: %s" % blob.name)
