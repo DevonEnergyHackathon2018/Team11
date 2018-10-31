@@ -21,8 +21,8 @@ def get_circles(filename, circle_folder):
 
     gimage = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,3.5)
 
-    #circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1.4,150,param1=45,param2=30,minRadius=50,maxRadius=100)
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 450)
+    circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,145,param1=150,param2=22 ,minRadius=50,maxRadius=150)
+    #circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 450)
    # circles = np.uint16(np.around(circles))
     if not circles is None:
         for _,i in enumerate(circles[0,:]):
