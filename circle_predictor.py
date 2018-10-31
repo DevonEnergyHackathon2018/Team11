@@ -47,12 +47,12 @@ def interpret_results(filename, probs):
     print(filename, mean, count, rmax)
     message = ""
     if count > 15:
-        message = {"message":"%s is suffering from data quality issues - can't have a total of (%d)" % (filename, count),"colour":"800080"}
+        message = {"message":"%s is suffering from data quality issues - can't have a total teeth (%d) greater than 15" % (filename, count),"colour":"800080"}
     else:
         if mean < 3:
-            message = {"message":"%s is within nominal values (%d)" % (filename, round(mean)),"colour":"009933"}
+            message = {"message":"%s is within nominal values (avg:%d, teeth analyzed: %d)" % (filename, round(mean), count),"colour":"009933"}
         elif mean < 5:
-            message = {"message":"%s is getting worn down (%d)" % (filename, round(mean)),"colour":"ffcc00"}
+            message = {"message":"%s is getting worn down (avg:%d, teeth analyzed: %d)" % (filename, round(mean), count),"colour":"ffcc00"}
         else:
-             message = {"message":"%s needs replacing (%d)" % (filename, round(mean)),"colour":"b30000"}
+             message = {"message":"%s needs replacing (avg:%d, teeth analyzed: %d)" % (filename, round(mean), count),"colour":"b30000"}
     return message
