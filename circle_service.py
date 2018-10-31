@@ -15,6 +15,9 @@ def upload_circles(folder, bbService):
         blob_path_to_file = "%s/%s" % (fname, filename)
         full_path_to_file = "%s/%s" % (folder, filename)
         bbService.create_blob_from_path("circles", blob_path_to_file, full_path_to_file)
+        if filename.startswith("original."):
+            bbService.create_blob_from_path("$web", blob_path_to_file, full_path_to_file)
+
 
 def send_flow(flowurl, message):
     """sends a request to get a flow going"""
@@ -52,17 +55,18 @@ while True:
                         circle_predictions = predict_circles(creds['api_url'], creds['api_key'], foldername)
                         irm = interpret_results(blob.name, circle_predictions)
                         json.dump(circle_predictions, open(foldername+"/predictions.json","w"))
-                        teams_message(irm['message'],creds['teamshook'],irm['colour'])
+                        teams_message(irm['message'],creds['teamshook'],irm['colour'], "%s/%s/original.%s" % (creds['webblob'],foldername.split("/")[-1], extent))
                         #send_flow(creds['flowurl'],{"message":"DRILLBIT - found circles in: %s" % blob.name})           
                     else:
                         #send_flow(creds['flowurl'],{"message":"NOT DRILLBIT - unable to find circles in: %s" % blob.name})
-                        teams_message("NOT DRILLBIT. probable data quality issues with %s" % blob.name,creds['teamshook'],"800080")         
+                        teams_message("NOT DRILLBIT. probable data quality issues with %s" % blob.name,creds['teamshook'],"800080", "%s/%s/original.%s" % (creds['webblob'],foldername.split("/")[-1], extent))         
                     status[blob.name]=foldername
                     json.dump(status,open('/etc/hackathon/status.json','w'))
                     print("[+] processed: %s" % blob.name)
                 except:
                     print("[-] erroring when trying to find circles: %s" % blob.name)
-                    teams_message("data quality issues with %s" % blob.name,creds['teamshook'],"800080")
+                    teams_message("processing issues with %s" % blob.name, creds['teamshook'],"800080")
+                    raise
 
             else:
                 print("[*] already processed: %s" % blob.name)

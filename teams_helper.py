@@ -1,6 +1,6 @@
 import requests
 
-def teams_message(message, channel, colour):
+def teams_message(message, channel, colour, image=False):
     """sends a card on teams"""
     card={
     "@context": "http://schema.org/extensions",
@@ -9,6 +9,11 @@ def teams_message(message, channel, colour):
     "title": "Automated DrillBit analysis",
     "text": message
     }
+    if image:
+        card["images"]=[
+                {
+                    "image":image
+                }]
     wh_resp=requests.post(url=channel, json=card)
     if wh_resp.status_code != 200:
         print(wh_resp.text)
