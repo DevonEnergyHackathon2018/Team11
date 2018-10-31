@@ -1,0 +1,5 @@
+requests
+azure.storage
+matplotlib
+numpy
+opencv-python

@@ -1,0 +1,12 @@
+[Unit]
+Description=blobirizer Server
+
+[Service]
+User=tensorer
+Type=simple
+ExecStart=/home/tensorer/blobirizer.sh
+Restart=on-failure
+
+
+[Install]
+WantedBy=multi-user.target
