@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: drillbit
+spec:
+  containers:
+  - name: drillbit
+    image: drillbit.azurecr.io/drillbit
+    env:
+      - name: APPID
+        valueFrom:
+          secretKeyRef:
+            name: drillbit
+            key: appid
+      - name: APPKEY
+        valueFrom:
+          secretKeyRef:
+            name: drillbit
+            key: key
+      - name: RESOURCE
+        valueFrom:
+          secretKeyRef:
+            name: drillbit
+            key: resource
+      - name: TENANT
+        valueFrom:
+          secretKeyRef:
+            name: drillbit
+            key: tenant
+      - name: VAULT
+        valueFrom:
+          secretKeyRef:
+            name: drillbit
+            key: vault
+  restartPolicy: Never
+
