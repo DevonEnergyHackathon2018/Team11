@@ -6,10 +6,7 @@ def upload_circle(api_url, api_key, path):
     """uploads the circle imager to the vision API"""
     headers = {"Prediction-Key": api_key, "Content-Type": "multipart/form-data"}
     img_data = open(path,'rb')
-    print(api_url)
     resp = requests.post(url=api_url, headers=headers, data=img_data)
-    print(resp)
-
     if resp.status_code == 200:
         return resp.json()
     else:

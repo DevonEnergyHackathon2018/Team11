@@ -1,6 +1,5 @@
 from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
 from azure.common.credentials import ServicePrincipalCredentials
-import json
 
 class SecretHelper():
     """helper class to retrieve credentials from Azure Key Valut"""

@@ -2,6 +2,8 @@ from azure.storage.blob import BlockBlobService, PublicAccess
 import os
 import requests
 import json
+import logging
+import datetime
 from circles import get_circles
 from circle_predictor import predict_circles, interpret_results
 from teams_helper import teams_message
@@ -19,17 +21,9 @@ def upload_circles(folder, bbService):
         if filename.startswith("original."):
             bbService.create_blob_from_path("$web", blob_path_to_file, full_path_to_file)
 
-
-def send_flow(flowurl, message):
-    """sends a request to get a flow going"""
-    try:
-        resp = requests.post(url=flowurl, json=message)
-        if resp.status_code == 202:
-            print("[+] successfully sent flow")
-    except:
-        print("[-] issues with flow")
-
 if __name__ == "__main__":
+    logfile = "/var/log/drillbit-logs/log-%s.log" % datetime.datetime.now().strftime("%Y-%m-%d")
+    logging.basicConfig(filename=logfile,level=logging.INFO)
     if "APPID" in os.environ:
         appid = os.environ["APPID"]
     if "TENANT" in os.environ:
@@ -41,13 +35,13 @@ if __name__ == "__main__":
     if "VAULT" in os.environ:
         vbu = "https://%s.vault.azure.net" % os.environ["VAULT"]
     if not(appid and tenant and key and resource):
-        print("[---] you need to have the right evironment variables")
+        logging.critical("[---] you need to have the right evironment variables")
         exit()
     
     sh = SecretHelper(client_id=appid, secret=key, tenant=tenant, resource=resource)
     block_blob_service = BlockBlobService(account_name=sh.get_secret(vbu, "blobaccount").value, account_key=sh.get_secret(vbu, "blobkey").value)
     container_name='photos'
-    status = json.load(open('/etc/hackathon/status.json'))
+    status = json.load(open('/opt/drillbit/status.json'))
     while True:
         generator = block_blob_service.list_blobs(container_name)
         for blob in generator:
@@ -55,12 +49,12 @@ if __name__ == "__main__":
                 if not blob.name in status:
                     stripped_name = blob.name.split("/")[-1]
                     filen = stripped_name.replace(".","_")
-                    foldername = "/tmp/%s" % filen
+                    foldername = "/opt/drillbit/cache/%s" % filen
                     try:
                         if not os.path.isdir(foldername):
                             os.mkdir(foldername)
                     except:
-                        print("[-] unable to create folder: %s" % foldername)
+                        logging.error("[-] unable to create folder: %s" % foldername)
                     extent = blob.name.split(".")[-1]
                     full_path_to_file2 = "%s/original.%s" % (foldername , extent)
                     block_blob_service.get_blob_to_path(container_name, blob.name, full_path_to_file2)
@@ -70,16 +64,16 @@ if __name__ == "__main__":
                             circle_predictions = predict_circles(sh.get_secret(vbu, "apiurl").value, sh.get_secret(vbu, "apikey").value, foldername)
                             irm = interpret_results(blob.name, circle_predictions)
                             json.dump(circle_predictions, open(foldername+"/predictions.json","w"))
-                            teams_message(irm['message'],sh.get_secret(vbu, "teamshook").value,irm['colour'], "%s/%s/original.%s" % (sh.get_secret(vbu, "webblob").value,foldername.split("/")[-1], extent))
+                            teams_message(irm['message'], sh.get_secret(vbu, "teamshook").value, irm['colour'], "%s/%s/original.%s" % (sh.get_secret(vbu, "webblob").value,foldername.split("/")[-1], extent))
                         else:
-                            teams_message("NOT DRILLBIT. probable data quality issues with %s" % sh.get_secret(vbu, "teamshook").value,"800080", "%s/%s/original.%s" % (sh.get_secret(vbu, "webblob").value,foldername.split("/")[-1], extent))         
+                            teams_message("NOT DRILLBIT. probable data quality issues with %s" % blob.name, sh.get_secret(vbu, "teamshook").value,"800080", "%s/%s/original.%s" % (sh.get_secret(vbu, "webblob").value,foldername.split("/")[-1], extent))         
                         status[blob.name]=foldername
-                        json.dump(status,open('/etc/hackathon/status.json','w'))
-                        print("[+] processed: %s" % blob.name)
+                        json.dump(status,open('/opt/drillbit/status.json','w'))
+                        logging.info("[+] processed: %s" % blob.name)
                     except:
-                        print("[-] erroring when trying to find circles: %s" % blob.name)
+                        logging.error("[-] erroring when trying to find circles: %s" % blob.name)
                         teams_message("processing issues with %s" % blob.name, sh.get_secret(vbu, "teamshook").value,"800080")
                         raise
 
                 else:
-                    print("[*] already processed: %s" % blob.name)
+                    logging.error("[*] already processed: %s" % blob.name)

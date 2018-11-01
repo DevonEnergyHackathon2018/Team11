@@ -2,3 +2,4 @@ __pycache__/circles.cpython-36.pyc
 __pycache__/teams_helper.cpython-36.pyc
 __pycache__/circle_predictor.cpython-36.pyc
 secrets/secret.json
+bash/fix_access.sh
